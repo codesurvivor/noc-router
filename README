@@ -1,1 +1,1 @@
-This project implements NoC static and dynamic routers. Static router is an XY router and dynamic router is an Odd-Even router.
+This project implements NoC static and dynamic routers. Static router is an XY router. Dynamic router is an Odd-Even router and a DyAD router.
