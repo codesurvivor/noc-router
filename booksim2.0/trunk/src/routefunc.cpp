@@ -400,6 +400,7 @@ void fattree_anca( const Router *r, const Flit *f,
 // ===
 
 int dor_next_mesh( int cur, int dest, bool descending = false );
+int odd_even_next_mesh( int cur, int dest, bool descending = false );
 
 void adaptive_xy_yx_mesh( const Router *r, const Flit *f, 
 		 int in_channel, OutputSet *outputs, bool inject )
@@ -536,9 +537,42 @@ void xy_yx_mesh( const Router *r, const Flit *f,
 //=============================================================
 
 void odd_even_mesh( const Router *r, const Flit *f, 
-		 int in_channel, OutputSet *outputs, bool inject )
+  int in_channel, OutputSet *outputs, bool inject )
 {
- 
+    int out_port = inject ? -1 : odd_even_next_mesh( r->GetID( ), f->dest );
+
+    int vcBegin = 0, vcEnd = gNumVCs-1;
+    if ( f->type == Flit::READ_REQUEST ) {
+        vcBegin = gReadReqBeginVC;
+        vcEnd = gReadReqEndVC;
+    } else if ( f->type == Flit::WRITE_REQUEST ) {
+        vcBegin = gWriteReqBeginVC;
+        vcEnd = gWriteReqEndVC;
+    } else if ( f->type ==  Flit::READ_REPLY ) {
+        vcBegin = gReadReplyBeginVC;
+        vcEnd = gReadReplyEndVC;
+    } else if ( f->type ==  Flit::WRITE_REPLY ) {
+        vcBegin = gWriteReplyBeginVC;
+        vcEnd = gWriteReplyEndVC;
+    }
+    assert(((f->vc >= vcBegin) && (f->vc <= vcEnd)) || (inject && (f->vc < 0)));
+
+    if ( !inject && f->watch ) {
+        *gWatchOut << GetSimTime() << " | " << r->FullName() << " | "
+          << "Adding VC range [" 
+          << vcBegin << ","  
+          << vcEnd << "]"
+          << " at output port " << out_port
+          << " for flit " << f->id
+          << " (input port " << in_channel
+          << ", destination " << f->dest << ")"
+          << "." << endl;
+    }
+
+    outputs->Clear();
+
+    outputs->AddRange( out_port, vcBegin, vcEnd );
+
 }
 
 //=============================================================
@@ -574,6 +608,44 @@ int dor_next_mesh( int cur, int dest, bool descending )
   }
 }
 
+int odd_even_next_mesh( int cur, int dest, bool descending )
+{
+  if ( cur == dest ) {
+    return 2*gN;  // Eject
+  }
+  return 1;
+
+
+
+
+//  if ( cur == dest ) {
+//    return 2*gN;  // Eject
+//  }
+//
+//  int dim_left;
+//
+//  if(descending) {
+//    for ( dim_left = ( gN - 1 ); dim_left > 0; --dim_left ) {
+//      if ( ( cur * gK / gNodes ) != ( dest * gK / gNodes ) ) { break; }
+//      cur = (cur * gK) % gNodes; dest = (dest * gK) % gNodes;
+//    }
+//    cur = (cur * gK) / gNodes;
+//    dest = (dest * gK) / gNodes;
+//  } else {
+//    for ( dim_left = 0; dim_left < ( gN - 1 ); ++dim_left ) {
+//      if ( ( cur % gK ) != ( dest % gK ) ) { break; }
+//      cur /= gK; dest /= gK;
+//    }
+//    cur %= gK;
+//    dest %= gK;
+//  }
+//
+//  if ( cur < dest ) {
+//    return 2*dim_left;     // Right
+//  } else {
+//    return 2*dim_left + 1; // Left
+//  }
+}
 //=============================================================
 
 void dor_next_torus( int cur, int dest, int in_port,
