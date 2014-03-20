@@ -1,0 +1,6 @@
+output_port:
+	0: east
+	1: west
+	2: north 
+	3: south
+	4: local PE

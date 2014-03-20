@@ -592,7 +592,7 @@ int dor_next_mesh( int cur, int dest, bool descending )
     }
     cur = (cur * gK) / gNodes;
     dest = (dest * gK) / gNodes;
-  } else {
+  } else { // x_then_y
     for ( dim_left = 0; dim_left < ( gN - 1 ); ++dim_left ) {
       if ( ( cur % gK ) != ( dest % gK ) ) { break; }
       cur /= gK; dest /= gK;

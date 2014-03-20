@@ -1,16 +1,15 @@
 module crossbar(out, in, s);
 
-parameter width = 32; // 32-bit
-parameter n_in_ports = 5;
-parameter n_out_ports = 5;
+parameter width = 2; // number of bits for each port
+localparam n_in_ports = 5;
+localparam n_out_ports = 5;
 
 // port declaration
 output [width*n_out_ports-1:0] out;
 input [width*n_in_ports-1:0] in;
 input [5:0] s;
 
-reg [width-1:0] temp_out;
-reg out;
+reg[width*n_out_ports-1:0] out;
 
 
 always @(in or s)
