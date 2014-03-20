@@ -1,0 +1,17 @@
+//a number of hotspot sending to a single destiantion, no other traffic
+
+create_permanent_flows=1;
+flow_size = 999999;
+const_flits_per_packet = 32;
+
+injection_rate = 1.0;
+injection_process=hotspot_test;
+traffic       = rand_noself_hotspot;
+hotspot_nodes = {32};
+hotspot_rates = {1};
+
+//terminating conditions for hotspot
+no_drain=1;
+forced_warmup=1; 
+warmup_periods=1;
+max_samples=2;

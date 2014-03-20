@@ -1,0 +1,48 @@
+#ifndef _RESERVATION_H_
+#define _RESERVATION_H_
+
+enum FlowStatus{
+  FLOW_STATUS_SPEC=0,
+  FLOW_STATUS_NORM,
+  FLOW_STATUS_NACK,
+  FLOW_STATUS_NACK_TRANSITION,
+  FLOW_STATUS_WAIT,
+  FLOW_STATUS_GRANT_TRANSITION
+};
+
+enum SRPFlitType{
+  RES_TYPE_SPEC=0,
+  RES_TYPE_NORM,//dragonfly depends on spec and normal < control packets
+  RES_TYPE_NACK,
+  RES_TYPE_ACK,
+  RES_TYPE_RES,
+  RES_TYPE_GRANT  
+};
+
+
+#define RES_STATUS_REORDER 2
+#define RES_STATUS_ASSIGNED 1
+#define RES_STATUS_NONE 0
+
+
+#define FLIT_PRI_GRANT 4
+#define FLIT_PRI_RES 3
+#define FLIT_PRI_ACK 2
+#define FLIT_PRI_NACK 2
+#define FLIT_PRI_NORM 1
+#define FLIT_PRI_SPEC 0
+
+#define RES_RESERVED_VCS 2
+#define ECN_RESERVED_VCS 1
+
+
+#define FLIT_NACKED 2
+#define FLIT_NORMAL 1
+#define FLIT_SPEC 0
+
+
+#define NORMAL_MODE 0 
+#define RES_MODE 1
+#define ECN_MODE 2
+
+#endif
