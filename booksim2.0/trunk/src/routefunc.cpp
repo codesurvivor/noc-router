@@ -400,7 +400,7 @@ void fattree_anca( const Router *r, const Flit *f,
 // ===
 
 int dor_next_mesh( int cur, int dest, bool descending = false );
-int odd_even_next_mesh( int cur, int dest, bool descending = false );
+
 
 void adaptive_xy_yx_mesh( const Router *r, const Flit *f, 
 		 int in_channel, OutputSet *outputs, bool inject )
@@ -535,45 +535,140 @@ void xy_yx_mesh( const Router *r, const Flit *f,
 //
 // End Balfour-Schultz
 //=============================================================
+void my_xy_mesh( const Router *r, const Flit *f, 
+		 int in_channel, OutputSet *outputs, bool inject )
+{
+  int vcBegin = 0, vcEnd = gNumVCs-1;
+  if ( f->type == Flit::READ_REQUEST ) {
+    vcBegin = gReadReqBeginVC;
+    vcEnd = gReadReqEndVC;
+  } else if ( f->type == Flit::WRITE_REQUEST ) {
+    vcBegin = gWriteReqBeginVC;
+    vcEnd = gWriteReqEndVC;
+  } else if ( f->type ==  Flit::READ_REPLY ) {
+    vcBegin = gReadReplyBeginVC;
+    vcEnd = gReadReplyEndVC;
+  } else if ( f->type ==  Flit::WRITE_REPLY ) {
+    vcBegin = gWriteReplyBeginVC;
+    vcEnd = gWriteReplyEndVC;
+  }
+  assert(((f->vc >= vcBegin) && (f->vc <= vcEnd)) || (inject && (f->vc < 0)));
+
+  int out_port;
+
+  if(inject) {
+
+    out_port = -1;
+
+  } else if(r->GetID() == f->dest) {
+
+    // at destination router, we don't need to separate VCs by dim order
+    out_port = 2*gN;
+
+  } else {
+
+    int cur = r->GetID();
+    int dest = f->dest;
+ 
+    int cur_x = cur % gK;
+    int cur_y = cur / gK;
+    int dest_x = dest % gK;
+    int dest_y = dest / gK;
+
+    if (cur_x < dest_x) {
+        out_port = 0;
+    } else if (cur_x > dest_x) {
+        out_port = 1;
+    } else if (cur_y < dest_y) {
+        out_port = 2;
+    } else
+        out_port = 3;
+
+    ////each class must have at least 2 vcs assigned or else xy_yx will deadlock
+    //int const available_vcs = (vcEnd - vcBegin + 1) / 2;
+    //assert(available_vcs > 0);
+
+    //// Route order (XY or YX) determined when packet is injected
+    ////  into the network
+    //bool x_then_y = ((in_channel < 2*gN) ?
+    //    	     (f->vc < (vcBegin + available_vcs)) :
+    //    	     (RandomInt(1) > 0));
+
+    //if(x_then_y) {
+    //  out_port = dor_next_mesh( r->GetID(), f->dest, false );
+    //  vcEnd -= available_vcs;
+    //} else {
+    //  out_port = dor_next_mesh( r->GetID(), f->dest, true );
+    //  vcBegin += available_vcs;
+    //}
+
+  }
+
+  outputs->Clear();
+
+  outputs->AddRange( out_port , vcBegin, vcEnd );
+  
+}
 
 void odd_even_mesh( const Router *r, const Flit *f, 
-  int in_channel, OutputSet *outputs, bool inject )
+		 int in_channel, OutputSet *outputs, bool inject )
 {
-    int out_port = inject ? -1 : odd_even_next_mesh( r->GetID( ), f->dest );
+  int vcBegin = 0, vcEnd = gNumVCs-1;
+  if ( f->type == Flit::READ_REQUEST ) {
+    vcBegin = gReadReqBeginVC;
+    vcEnd = gReadReqEndVC;
+  } else if ( f->type == Flit::WRITE_REQUEST ) {
+    vcBegin = gWriteReqBeginVC;
+    vcEnd = gWriteReqEndVC;
+  } else if ( f->type ==  Flit::READ_REPLY ) {
+    vcBegin = gReadReplyBeginVC;
+    vcEnd = gReadReplyEndVC;
+  } else if ( f->type ==  Flit::WRITE_REPLY ) {
+    vcBegin = gWriteReplyBeginVC;
+    vcEnd = gWriteReplyEndVC;
+  }
+  assert(((f->vc >= vcBegin) && (f->vc <= vcEnd)) || (inject && (f->vc < 0)));
 
-    int vcBegin = 0, vcEnd = gNumVCs-1;
-    if ( f->type == Flit::READ_REQUEST ) {
-        vcBegin = gReadReqBeginVC;
-        vcEnd = gReadReqEndVC;
-    } else if ( f->type == Flit::WRITE_REQUEST ) {
-        vcBegin = gWriteReqBeginVC;
-        vcEnd = gWriteReqEndVC;
-    } else if ( f->type ==  Flit::READ_REPLY ) {
-        vcBegin = gReadReplyBeginVC;
-        vcEnd = gReadReplyEndVC;
-    } else if ( f->type ==  Flit::WRITE_REPLY ) {
-        vcBegin = gWriteReplyBeginVC;
-        vcEnd = gWriteReplyEndVC;
+  int out_port;
+
+  if(inject) {
+
+    out_port = -1;
+
+  } else if(r->GetID() == f->dest) {
+
+    // at destination router, we don't need to separate VCs by dim order
+    out_port = 2*gN;
+
+  } else {
+
+    //each class must have at least 2 vcs assigned or else xy_yx will deadlock
+    int const available_vcs = (vcEnd - vcBegin + 1) / 2;
+    assert(available_vcs > 0);
+
+    // Route order (XY or YX) determined when packet is injected
+    //  into the network
+    bool x_then_y = ((in_channel < 2*gN) ?
+		     (f->vc < (vcBegin + available_vcs)) :
+		     (RandomInt(1) > 0));
+
+    if(x_then_y) {
+      out_port = dor_next_mesh( r->GetID(), f->dest, false );
+      vcEnd -= available_vcs;
+    } else {
+      out_port = dor_next_mesh( r->GetID(), f->dest, true );
+      vcBegin += available_vcs;
     }
-    assert(((f->vc >= vcBegin) && (f->vc <= vcEnd)) || (inject && (f->vc < 0)));
 
-    if ( !inject && f->watch ) {
-        *gWatchOut << GetSimTime() << " | " << r->FullName() << " | "
-          << "Adding VC range [" 
-          << vcBegin << ","  
-          << vcEnd << "]"
-          << " at output port " << out_port
-          << " for flit " << f->id
-          << " (input port " << in_channel
-          << ", destination " << f->dest << ")"
-          << "." << endl;
-    }
+  }
 
-    outputs->Clear();
+  outputs->Clear();
 
-    outputs->AddRange( out_port, vcBegin, vcEnd );
-
+  outputs->AddRange( out_port , vcBegin, vcEnd );
+  
 }
+
+
 
 //=============================================================
 
@@ -608,44 +703,7 @@ int dor_next_mesh( int cur, int dest, bool descending )
   }
 }
 
-int odd_even_next_mesh( int cur, int dest, bool descending )
-{
-  if ( cur == dest ) {
-    return 2*gN;  // Eject
-  }
-  return 1;
 
-
-
-
-//  if ( cur == dest ) {
-//    return 2*gN;  // Eject
-//  }
-//
-//  int dim_left;
-//
-//  if(descending) {
-//    for ( dim_left = ( gN - 1 ); dim_left > 0; --dim_left ) {
-//      if ( ( cur * gK / gNodes ) != ( dest * gK / gNodes ) ) { break; }
-//      cur = (cur * gK) % gNodes; dest = (dest * gK) % gNodes;
-//    }
-//    cur = (cur * gK) / gNodes;
-//    dest = (dest * gK) / gNodes;
-//  } else {
-//    for ( dim_left = 0; dim_left < ( gN - 1 ); ++dim_left ) {
-//      if ( ( cur % gK ) != ( dest % gK ) ) { break; }
-//      cur /= gK; dest /= gK;
-//    }
-//    cur %= gK;
-//    dest %= gK;
-//  }
-//
-//  if ( cur < dest ) {
-//    return 2*dim_left;     // Right
-//  } else {
-//    return 2*dim_left + 1; // Left
-//  }
-}
 //=============================================================
 
 void dor_next_torus( int cur, int dest, int in_port,
@@ -2050,6 +2108,7 @@ void InitializeRoutingMap( const Configuration & config )
   
   // Chao Chen
   gRoutingFunctionMap["odd_even_mesh"]          = &odd_even_mesh;
+  gRoutingFunctionMap["my_xy_mesh"]          = &my_xy_mesh;
   // Chao Chen
 
 
