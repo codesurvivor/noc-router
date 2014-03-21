@@ -50,6 +50,11 @@
 #include "qtree.hpp"
 #include "cmesh.hpp"
 
+#define EAST 0
+#define WEST 1
+#define NORTH 2
+#define SOUTH 3
+#define LOCAL 4
 
 
 map<string, tRoutingFunction> gRoutingFunctionMap;
@@ -583,25 +588,7 @@ void my_xy_mesh( const Router *r, const Flit *f,
         out_port = 2;
     } else
         out_port = 3;
-
-    ////each class must have at least 2 vcs assigned or else xy_yx will deadlock
-    //int const available_vcs = (vcEnd - vcBegin + 1) / 2;
-    //assert(available_vcs > 0);
-
-    //// Route order (XY or YX) determined when packet is injected
-    ////  into the network
-    //bool x_then_y = ((in_channel < 2*gN) ?
-    //    	     (f->vc < (vcBegin + available_vcs)) :
-    //    	     (RandomInt(1) > 0));
-
-    //if(x_then_y) {
-    //  out_port = dor_next_mesh( r->GetID(), f->dest, false );
-    //  vcEnd -= available_vcs;
-    //} else {
-    //  out_port = dor_next_mesh( r->GetID(), f->dest, true );
-    //  vcBegin += available_vcs;
-    //}
-
+    //out_port = dor_next_mesh( r->GetID(), f->dest, false );
   }
 
   outputs->Clear();
@@ -642,24 +629,56 @@ void odd_even_mesh( const Router *r, const Flit *f,
 
   } else {
 
-    //each class must have at least 2 vcs assigned or else xy_yx will deadlock
-    int const available_vcs = (vcEnd - vcBegin + 1) / 2;
-    assert(available_vcs > 0);
+    vector<int> avail;
 
-    // Route order (XY or YX) determined when packet is injected
-    //  into the network
-    bool x_then_y = ((in_channel < 2*gN) ?
-		     (f->vc < (vcBegin + available_vcs)) :
-		     (RandomInt(1) > 0));
+    int cur = r->GetID();
+    int dest = f->dest;
+    int src = f->src;
 
-    if(x_then_y) {
-      out_port = dor_next_mesh( r->GetID(), f->dest, false );
-      vcEnd -= available_vcs;
+    int c0 = cur % gK;
+    int c1 = cur / gK;
+    int d0 = dest % gK;
+    int d1 = dest / gK;
+    int s0 = src % gK;
+    int s1 = src / gK;
+
+    int e0 = d0 - c0;
+    int e1 = d1 - c1;
+
+    if (e0 == 0) {
+        if (e1 > 0) {
+            avail.push_back(NORTH);
+        } else {
+            avail.push_back(SOUTH);
+        }
     } else {
-      out_port = dor_next_mesh( r->GetID(), f->dest, true );
-      vcBegin += available_vcs;
+        if (e0 > 0) {
+            if (e1 == 0) {
+                avail.push_back(EAST);
+            } else {
+                if (c0%2 != 0 || c0 == s0) {
+                    if (e1 > 0) {
+                        avail.push_back(NORTH);
+                    } else {
+                        avail.push_back(SOUTH);
+                    }
+                }
+                if (d0%2 != 0 || e0 != 1) {
+                    avail.push_back(EAST);
+                }
+            }
+        } else {
+            avail.push_back(WEST);
+            if (c0%2 == 0) {
+                if (e1 > 0) {
+                    avail.push_back(NORTH);
+                } else {
+                    avail.push_back(SOUTH);
+                }
+            }
+        } 
     }
-
+    out_port = avail[rand()%avail.size()];
   }
 
   outputs->Clear();
