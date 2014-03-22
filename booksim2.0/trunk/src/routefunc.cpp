@@ -581,13 +581,13 @@ void my_xy_mesh( const Router *r, const Flit *f,
     int dest_y = dest / gK;
 
     if (cur_x < dest_x) {
-        out_port = 0;
+        out_port = EAST;
     } else if (cur_x > dest_x) {
-        out_port = 1;
+        out_port = WEST;
     } else if (cur_y < dest_y) {
-        out_port = 2;
+        out_port = NORTH;
     } else
-        out_port = 3;
+        out_port = SOUTH;
     //out_port = dor_next_mesh( r->GetID(), f->dest, false );
   }
 
