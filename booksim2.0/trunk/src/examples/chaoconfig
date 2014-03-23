@@ -34,9 +34,10 @@ k = 8;
 n = 2;
 
 // Routing
-routing_function = odd_even;
+//routing_function = odd_even;
 //routing_function = xy_yx;
-//routing_function = my_xy;
+routing_function = my_xy;
+//routing_function = dy_xy;
 
 // Flow control
 num_vcs     = 8;

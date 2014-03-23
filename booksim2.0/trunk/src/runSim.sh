@@ -1,0 +1,8 @@
+./booksim examples/chaoconfig injection_rate=0.001 | grep 'Packet latency average' | grep '1 samples'
+./booksim examples/chaoconfig injection_rate=0.002 | grep 'Packet latency average' | grep '1 samples'
+./booksim examples/chaoconfig injection_rate=0.003 | grep 'Packet latency average' | grep '1 samples'
+./booksim examples/chaoconfig injection_rate=0.004 | grep 'Packet latency average' | grep '1 samples'
+./booksim examples/chaoconfig injection_rate=0.005 | grep 'Packet latency average' | grep '1 samples'
+./booksim examples/chaoconfig injection_rate=0.006 | grep 'Packet latency average' | grep '1 samples'
+./booksim examples/chaoconfig injection_rate=0.007 | grep 'Packet latency average' | grep '1 samples'
+./booksim examples/chaoconfig injection_rate=0.008 | grep 'Packet latency average' | grep '1 samples'
