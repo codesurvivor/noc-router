@@ -2074,12 +2074,17 @@ void TrafficManager::DisplayStats(ostream & os) const {
 
 void TrafficManager::DisplayOverallStats( ostream & os ) const {
 
+    ofstream myfile;
+    myfile.open("dump.txt");
+
     os << "====== Overall Traffic Statistics ======" << endl;
     for ( int c = 0; c < _classes; ++c ) {
 
         if(_measure_stats[c] == 0) {
             continue;
         }
+
+        myfile << _overall_avg_plat[c] / (double)_total_sims << endl;
 
         os << "====== Traffic class " << c << " ======" << endl;
     
@@ -2162,6 +2167,8 @@ void TrafficManager::DisplayOverallStats( ostream & os ) const {
 #endif
     
     }
+
+    myfile.close();
   
 }
 
