@@ -4,7 +4,7 @@ import os
 
 # injection rate
 dataRate = [];
-for n in range(1, 7):
+for n in range(1, 9):
 	dataRate.append(n*0.001)
 
 # XY routing
@@ -12,7 +12,7 @@ dataXY = []
 routing = "my_xy"
 print routing
 for n in range(len(dataRate)):
-	print "dataRate:", dataRate[n]
+	print "Inj. Rate:", dataRate[n]
 	with open(os.devnull, "w") as fnull:
 		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
 	allData = map(float, open('dump.txt').readlines())
@@ -23,7 +23,7 @@ dataOddEven = []
 routing = "odd_even"
 print routing
 for n in range(len(dataRate)):
-	print "dataRate:", dataRate[n]
+	print "Inj. Rate:", dataRate[n]
 	with open(os.devnull, "w") as fnull:
 		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
 	allData = map(float, open('dump.txt').readlines())
@@ -34,7 +34,7 @@ dataDyXY = []
 routing = "dy_xy"
 print routing
 for n in range(len(dataRate)):
-	print "dataRate:", dataRate[n]
+	print "Inj. Rate:", dataRate[n]
 	with open(os.devnull, "w") as fnull:
 		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
 	allData = map(float, open('dump.txt').readlines())
@@ -64,8 +64,8 @@ plt.plot(dataRate, dataOddEven, label='Odd Even')
 plt.plot(dataRate, dataDyXY, label='DyXY')
 
 plt.legend(loc='upper left')
-plt.xlabel('Injection Rate')
-plt.ylabel('Average packet latencies')
+plt.xlabel('Injection Rate (Packets/Cycle)')
+plt.ylabel('Average packet latencies (Cycles)')
 
 plt.savefig("latency.eps")
 
