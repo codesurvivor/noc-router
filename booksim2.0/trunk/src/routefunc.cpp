@@ -597,6 +597,70 @@ void my_xy_mesh( const Router *r, const Flit *f,
   
 }
 
+
+vector<int> findAOC( const Router *r, const Flit *f)
+{
+
+  vector<int> avail;
+  if (r->GetID() == f->dest) {
+
+    // at destination router, we don't need to separate VCs by dim order
+    avail.push_back(2*gN);
+
+  } else {
+
+
+    int cur = r->GetID();
+    int dest = f->dest;
+    int src = f->src;
+
+    int c0 = cur % gK;
+    int c1 = cur / gK;
+    int d0 = dest % gK;
+    int d1 = dest / gK;
+    int s0 = src % gK;
+
+    int e0 = d0 - c0;
+    int e1 = d1 - c1;
+
+    if (e0 == 0) {
+        if (e1 > 0) {
+            avail.push_back(NORTH);
+        } else {
+            avail.push_back(SOUTH);
+        }
+    } else {
+        if (e0 > 0) {
+            if (e1 == 0) {
+                avail.push_back(EAST);
+            } else {
+                if (c0%2 != 0 || c0 == s0) {
+                    if (e1 > 0) {
+                        avail.push_back(NORTH);
+                    } else {
+                        avail.push_back(SOUTH);
+                    }
+                }
+                if (d0%2 != 0 || e0 != 1) {
+                    avail.push_back(EAST);
+                }
+            }
+        } else {
+            avail.push_back(WEST);
+            if (c0%2 == 0) {
+                if (e1 > 0) {
+                    avail.push_back(NORTH);
+                } else {
+                    avail.push_back(SOUTH);
+                }
+            }
+        } 
+    }
+  }
+    return avail;
+}
+
+
 void my_nop_mesh( const Router *r, const Flit *f, 
 		 int in_channel, OutputSet *outputs, bool inject )
 {
@@ -629,23 +693,14 @@ void my_nop_mesh( const Router *r, const Flit *f,
 
   } else {
 
-    int cur = r->GetID();
-    int dest = f->dest;
- 
-    int cur_x = cur % gK;
-    int cur_y = cur / gK;
-    int dest_x = dest % gK;
-    int dest_y = dest / gK;
+    vector<int> avail = findAOC(r, f);
 
-    if (cur_x < dest_x) {
-        out_port = EAST;
-    } else if (cur_x > dest_x) {
-        out_port = WEST;
-    } else if (cur_y < dest_y) {
-        out_port = NORTH;
-    } else
-        out_port = SOUTH;
-    //out_port = dor_next_mesh( r->GetID(), f->dest, false );
+    if (avail.size() == 1)
+        out_port = avail[0];
+    else {
+        out_port = avail[rand()%avail.size()];
+    }
+  
   }
 
   outputs->Clear();
@@ -704,16 +759,6 @@ void dy_xy_mesh( const Router *r, const Flit *f,
         out2 =  (cur_x < dest_x) ? EAST : WEST;
         out_port = (r->GetUsedCredit(out1) > r->GetUsedCredit(out2)) ? out2 : out1;
     }
-
-    //if (cur_x < dest_x) {
-    //    out_port = EAST;
-    //} else if (cur_x > dest_x) {
-    //    out_port = WEST;
-    //} else if (cur_y < dest_y) {
-    //    out_port = NORTH;
-    //} else
-    //    out_port = SOUTH;
-    //out_port = dor_next_mesh( r->GetID(), f->dest, false );
   }
 
   outputs->Clear();
@@ -765,7 +810,6 @@ void odd_even_mesh( const Router *r, const Flit *f,
     int d0 = dest % gK;
     int d1 = dest / gK;
     int s0 = src % gK;
-    int s1 = src / gK;
 
     int e0 = d0 - c0;
     int e1 = d1 - c1;
@@ -803,7 +847,11 @@ void odd_even_mesh( const Router *r, const Flit *f,
             }
         } 
     }
-    out_port = avail[rand()%avail.size()];
+    if (avail.size() == 1)
+        out_port = avail[0];
+    else {
+        out_port = avail[rand()%avail.size()];
+    }
   }
 
   outputs->Clear();

@@ -28,3 +28,4 @@ booksim
 lex.yy.c
 y.tab.c
 y.tab.h
+booksim2.0/trunk/doc/*
