@@ -1,7 +1,6 @@
 from subprocess import call
 import matplotlib.pyplot as plt
-
-
+import os
 
 # injection rate
 dataRate = [];
@@ -11,26 +10,33 @@ for n in range(1, 7):
 # XY routing
 dataXY = []
 routing = "my_xy"
+print routing
 for n in range(len(dataRate)):
-	call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing])
+	print "dataRate:", dataRate[n]
+	with open(os.devnull, "w") as fnull:
+		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
 	allData = map(float, open('dump.txt').readlines())
 	dataXY.append(allData[0])
-
 
 # Odd Even routing
 dataOddEven = []
 routing = "odd_even"
+print routing
 for n in range(len(dataRate)):
-	call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing])
+	print "dataRate:", dataRate[n]
+	with open(os.devnull, "w") as fnull:
+		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
 	allData = map(float, open('dump.txt').readlines())
 	dataOddEven.append(allData[0])
-
 
 # DyXY routing
 dataDyXY = []
 routing = "dy_xy"
+print routing
 for n in range(len(dataRate)):
-	call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing])
+	print "dataRate:", dataRate[n]
+	with open(os.devnull, "w") as fnull:
+		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
 	allData = map(float, open('dump.txt').readlines())
 	dataDyXY.append(allData[0])
 
