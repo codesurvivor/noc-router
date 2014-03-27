@@ -4,8 +4,9 @@ import os
 
 # injection rate
 dataRate = [];
-for n in range(1, 3):
-	dataRate.append(n*0.001)
+dataRate = [0.008]
+#for n in range(1, 4):
+#	dataRate.append(n*0.001)
 
 # XY routing
 dataXY = []
@@ -16,6 +17,7 @@ for n in range(len(dataRate)):
 	with open(os.devnull, "w") as fnull:
 		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
 	allData = map(float, open('dump.txt').readlines())
+	os.remove('dump.txt')
 	dataXY.append(allData[0])
 
 # Odd Even routing
@@ -27,6 +29,7 @@ for n in range(len(dataRate)):
 	with open(os.devnull, "w") as fnull:
 		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
 	allData = map(float, open('dump.txt').readlines())
+	os.remove('dump.txt')
 	dataOddEven.append(allData[0])
 
 ## DyXY routing
@@ -38,6 +41,7 @@ for n in range(len(dataRate)):
 #	with open(os.devnull, "w") as fnull:
 #		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
 #	allData = map(float, open('dump.txt').readlines())
+#	os.remove('dump.txt')
 #	dataDyXY.append(allData[0])
 
 # NoP routing
@@ -49,6 +53,7 @@ for n in range(len(dataRate)):
 	with open(os.devnull, "w") as fnull:
 		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
 	allData = map(float, open('dump.txt').readlines())
+	os.remove('dump.txt')
 	dataNoP.append(allData[0])
 
 

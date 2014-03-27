@@ -702,10 +702,10 @@ void my_nop_mesh( const Router *r, const Flit *f,
             out_port = avail[0];
         else {
             //out_port = avail[rand()%avail.size()];
-            vector<int> score(avail.size(), 0);
+            vector<int> score(avail.size(), 100);
 
             for (int i=0; i < avail.size(); i++) {    
-                signed int offset;
+                int offset;
                 switch (avail[i]) {
                     case EAST:
                         offset = 1;
@@ -719,24 +719,27 @@ void my_nop_mesh( const Router *r, const Flit *f,
                     case SOUTH:
                         offset = -gK;
                         break;
-
                 }
 
                 vector<Router *> _routers = *r->p_routers;
-                //Router* r2 = _routers[r->GetID()+1];
-                //cout << "next  :" << r2->GetID() << endl;
+                Router* r2 = _routers[r->GetID()+offset];
+        
 
-
-                vector<int> avail2 = findAOC(_routers[r->GetID()+offset], f);
+                vector<int> avail2 = findAOC(r2, f);
 
 
                 for (int m=0; m < avail2.size(); m++) {
                     //if ()
-                    //score[i] += avail2[m]
+                    score[i] -= r2->GetUsedCredit(avail2[m]);
                 }
             }
 
-            
+            int ind = 0;
+            for (int i=0; i < avail.size()-1; i++) {    
+                if (score[i+1] > score[i])
+                    ind = i+1;
+            } 
+            out_port = ind;
         }
 
     }
