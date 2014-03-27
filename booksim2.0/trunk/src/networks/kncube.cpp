@@ -96,6 +96,9 @@ void KNCube::_BuildNet( const Configuration &config )
 					node, 2*_n + 1, 2*_n + 1 );
     _timed_modules.push_back(_routers[node]);
 
+
+    _routers[node]->p_routers = &_routers;
+
     router_name.str("");
 
     for ( int dim = 0; dim < _n; ++dim ) {

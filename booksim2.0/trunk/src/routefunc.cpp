@@ -572,6 +572,8 @@ void my_xy_mesh( const Router *r, const Flit *f,
 
     } else {
 
+
+        
         int cur = r->GetID();
         int dest = f->dest;
 
@@ -598,18 +600,18 @@ void my_xy_mesh( const Router *r, const Flit *f,
 }
 
 
-vector<int> findAOC( int cur, const Flit *f)
+vector<int> findAOC( const Router* r, const Flit *f)
 {
 
     vector<int> avail;
-    if (cur == f->dest) {
+    if (r->GetID() == f->dest) {
 
         // at destination router, we don't need to separate VCs by dim order
         avail.push_back(2*gN);
 
     } else {
 
-
+        int cur = r->GetID();
         int dest = f->dest;
         int src = f->src;
 
@@ -692,18 +694,48 @@ void my_nop_mesh( const Router *r, const Flit *f,
 
     } else {
 
-        vector<int> avail = findAOC(r->GetID(), f);
+
+
+        vector<int> avail = findAOC(r, f);
 
         if (avail.size() == 1)
             out_port = avail[0];
         else {
-            out_port = avail[rand()%avail.size()];
+            //out_port = avail[rand()%avail.size()];
+            vector<int> score(avail.size(), 0);
 
-            //for (int i=0; i < avail.size(); i++) {    
-            //    vector<int> avail2 = findAOC(r->GetID, f);
-            //}
+            for (int i=0; i < avail.size(); i++) {    
+                signed int offset;
+                switch (avail[i]) {
+                    case EAST:
+                        offset = 1;
+                        break;
+                    case WEST:
+                        offset = -1;
+                        break;
+                    case NORTH:
+                        offset = gK;
+                        break;
+                    case SOUTH:
+                        offset = -gK;
+                        break;
 
-            // vector<int> score;
+                }
+
+                vector<Router *> _routers = *r->p_routers;
+                //Router* r2 = _routers[r->GetID()+1];
+                //cout << "next  :" << r2->GetID() << endl;
+
+
+                vector<int> avail2 = findAOC(_routers[r->GetID()+offset], f);
+
+
+                for (int m=0; m < avail2.size(); m++) {
+                    //if ()
+                    //score[i] += avail2[m]
+                }
+            }
+
             
         }
 

@@ -42,6 +42,11 @@ typedef Channel<Credit> CreditChannel;
 
 class Router : public TimedModule {
 
+public:
+
+  // used to find all routers, Chao Chen
+  vector<Router *>* p_routers;
+
 protected:
 
   static int const STALL_BUFFER_BUSY;
