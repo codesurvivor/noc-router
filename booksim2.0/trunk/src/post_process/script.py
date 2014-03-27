@@ -4,9 +4,8 @@ import os
 
 # injection rate
 dataRate = [];
-dataRate = [0.008]
-#for n in range(1, 4):
-#	dataRate.append(n*0.001)
+for n in range(1, 3):
+	dataRate.append(n*0.001)
 
 # XY routing
 dataXY = []

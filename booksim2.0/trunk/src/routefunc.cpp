@@ -735,11 +735,13 @@ void my_nop_mesh( const Router *r, const Flit *f,
             }
 
             int ind = 0;
-            for (int i=0; i < avail.size()-1; i++) {    
-                if (score[i+1] > score[i])
+            for (int i=0; i < avail.size()-1; i++) {
+                if (score[i+1] == score[i])
+                    ind = (rand()%2)? ind : i+1;
+                else if (score[i+1] > score[i])
                     ind = i+1;
             } 
-            out_port = ind;
+            out_port = avail[ind];
         }
 
     }
