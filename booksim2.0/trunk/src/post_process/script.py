@@ -4,7 +4,7 @@ import os
 
 # injection rate
 dataRate = [];
-for n in range(1, 3):
+for n in range(1, 5):
 	dataRate.append(n*0.001)
 
 # XY routing
@@ -14,26 +14,15 @@ print routing
 for n in range(len(dataRate)):
 	print "Inj. Rate:", dataRate[n]
 	with open(os.devnull, "w") as fnull:
-		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
+		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), 
+          "routing_function = " + routing], stdout=fnull)
 	allData = map(float, open('dump.txt').readlines())
 	os.remove('dump.txt')
 	dataXY.append(allData[0])
 
-# Odd Even routing
-dataOddEven = []
-routing = "odd_even"
-print routing
-for n in range(len(dataRate)):
-	print "Inj. Rate:", dataRate[n]
-	with open(os.devnull, "w") as fnull:
-		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
-	allData = map(float, open('dump.txt').readlines())
-	os.remove('dump.txt')
-	dataOddEven.append(allData[0])
-
-## DyXY routing
-#dataDyXY = []
-#routing = "dy_xy"
+## Odd Even routing
+#dataOddEven = []
+#routing = "odd_even"
 #print routing
 #for n in range(len(dataRate)):
 #	print "Inj. Rate:", dataRate[n]
@@ -41,11 +30,11 @@ for n in range(len(dataRate)):
 #		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
 #	allData = map(float, open('dump.txt').readlines())
 #	os.remove('dump.txt')
-#	dataDyXY.append(allData[0])
+#	dataOddEven.append(allData[0])
 
-# NoP routing
-dataNoP = []
-routing = "my_nop"
+# DyXY routing
+dataDyXY = []
+routing = "dy_xy"
 print routing
 for n in range(len(dataRate)):
 	print "Inj. Rate:", dataRate[n]
@@ -53,7 +42,31 @@ for n in range(len(dataRate)):
 		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
 	allData = map(float, open('dump.txt').readlines())
 	os.remove('dump.txt')
-	dataNoP.append(allData[0])
+	dataDyXY.append(allData[0])
+
+## NoP routing
+#dataNoP = []
+#routing = "my_nop"
+#print routing
+#for n in range(len(dataRate)):
+#	print "Inj. Rate:", dataRate[n]
+#	with open(os.devnull, "w") as fnull:
+#		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
+#	allData = map(float, open('dump.txt').readlines())
+#	os.remove('dump.txt')
+#	dataNoP.append(allData[0])
+
+# Adaptive routing
+dataWest = []
+routing = "west_first"
+print routing
+for n in range(len(dataRate)):
+	print "Inj. Rate:", dataRate[n]
+	with open(os.devnull, "w") as fnull:
+		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
+	allData = map(float, open('dump.txt').readlines())
+	os.remove('dump.txt')
+	dataWest.append(allData[0])
 
 
 
@@ -63,27 +76,32 @@ for n in range(len(dataRate)):
 	print dataXY[n]
 
 
-print "======Odd Even packet latencies======"
-for n in range(len(dataRate)):
-	print dataOddEven[n]
-
-#print "======DyXY packet latencies======"
+#print "======Odd Even packet latencies======"
 #for n in range(len(dataRate)):
-#	print dataDyXY[n]
+#	print dataOddEven[n]
 
-print "======NoP packet latencies======"
+print "======DyXY packet latencies======"
 for n in range(len(dataRate)):
-	print dataNoP[n]
+	print dataDyXY[n]
 
+#print "======NoP packet latencies======"
+#for n in range(len(dataRate)):
+#	print dataNoP[n]
 
+print "======Adaptive packet latencies======"
+for n in range(len(dataRate)):
+	print dataWest[n]
+
+exit();
 
 # plot figure
 fig = plt.figure()
 
 plt.plot(dataRate, dataXY, label='XY')
-plt.plot(dataRate, dataOddEven, label='Odd Even')
-#plt.plot(dataRate, dataDyXY, label='DyXY')
-plt.plot(dataRate, dataNoP, label='NoP')
+#plt.plot(dataRate, dataOddEven, label='Odd Even')
+plt.plot(dataRate, dataDyXY, label='DyXY')
+#plt.plot(dataRate, dataNoP, label='NoP')
+plt.plot(dataRate, dataWest, label='Adaptive')
 
 plt.legend(loc='upper left')
 plt.xlabel('Injection Rate (Packets/Cycle)')

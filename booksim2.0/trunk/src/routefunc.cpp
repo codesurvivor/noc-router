@@ -543,6 +543,7 @@ void xy_yx_mesh( const Router *r, const Flit *f,
 void my_xy_mesh( const Router *r, const Flit *f, 
   int in_channel, OutputSet *outputs, bool inject )
 {
+
     int vcBegin = 0, vcEnd = gNumVCs-1;
     if ( f->type == Flit::READ_REQUEST ) {
         vcBegin = gReadReqBeginVC;
@@ -561,6 +562,10 @@ void my_xy_mesh( const Router *r, const Flit *f,
 
     int out_port;
 
+    //if (f->prev == -1)
+    //    f->prev = r->GetID();
+    //cout << "prev:" << f->prev << endl;
+    
     if(inject) {
 
         out_port = -1;
@@ -584,13 +589,16 @@ void my_xy_mesh( const Router *r, const Flit *f,
 
         if (cur_x < dest_x) {
             out_port = EAST;
+            //f->prev += 1;
         } else if (cur_x > dest_x) {
             out_port = WEST;
+            //f->prev -= 1;
         } else if (cur_y < dest_y) {
             out_port = NORTH;
+            //f->prev += gK;
         } else
             out_port = SOUTH;
-        //out_port = dor_next_mesh( r->GetID(), f->dest, false );
+            //f->prev -= gK;
     }
 
     outputs->Clear();
@@ -661,6 +669,143 @@ vector<int> findAOC( const Router* r, const Flit *f)
     return avail;
 }
 
+vector<int> findOddEven( const Router* r, const Flit *f)
+{
+
+    vector<int> avail;
+    if (r->GetID() == f->dest) {
+
+        // at destination router, we don't need to separate VCs by dim order
+        avail.push_back(2*gN);
+
+    } else {
+
+        int cur = r->GetID();
+        int dest = f->dest;
+        int src = f->src;
+
+        int c0 = cur % gK;
+        int c1 = cur / gK;
+        int d0 = dest % gK;
+        int d1 = dest / gK;
+        int s0 = src % gK;
+
+        
+
+
+        int e0 = d0 - c0;
+        int e1 = d1 - c1;
+
+        if (e0 == 0) {
+            if (e1 > 0) {
+                avail.push_back(NORTH);
+            } else {
+                avail.push_back(SOUTH);
+            }
+        } else {
+            if (e0 > 0) {
+                if (e1 == 0) {
+                    avail.push_back(EAST);
+                } else {
+                    if (c0%2 != 0 || c0 == s0) {
+                        if (e1 > 0) {
+                            avail.push_back(NORTH);
+                        } else {
+                            avail.push_back(SOUTH);
+                        }
+                    }
+                    if (d0%2 != 0 || e0 != 1) {
+                        avail.push_back(EAST);
+                    }
+                }
+            } else {
+                avail.push_back(WEST);
+                if (c0%2 == 0) {
+                    if (e1 > 0) {
+                        avail.push_back(NORTH);
+                    } else {
+                        avail.push_back(SOUTH);
+                    }
+                }
+            } 
+        }
+    }
+    return avail;
+}
+
+
+void west_first_mesh( const Router *r, const Flit *f, 
+  int in_channel, OutputSet *outputs, bool inject )
+{
+    int vcBegin = 0, vcEnd = gNumVCs-1;
+    if ( f->type == Flit::READ_REQUEST ) {
+        vcBegin = gReadReqBeginVC;
+        vcEnd = gReadReqEndVC;
+    } else if ( f->type == Flit::WRITE_REQUEST ) {
+        vcBegin = gWriteReqBeginVC;
+        vcEnd = gWriteReqEndVC;
+    } else if ( f->type ==  Flit::READ_REPLY ) {
+        vcBegin = gReadReplyBeginVC;
+        vcEnd = gReadReplyEndVC;
+    } else if ( f->type ==  Flit::WRITE_REPLY ) {
+        vcBegin = gWriteReplyBeginVC;
+        vcEnd = gWriteReplyEndVC;
+    }
+    assert(((f->vc >= vcBegin) && (f->vc <= vcEnd)) || (inject && (f->vc < 0)));
+
+    int out_port;
+
+    if(inject) {
+
+        out_port = -1;
+
+    } else if(r->GetID() == f->dest) {
+
+        // at destination router, we don't need to separate VCs by dim order
+        out_port = 2*gN;
+
+    } else {
+
+        int cur = r->GetID();
+        int dest = f->dest;
+
+        int c0 = cur % gK;
+        int c1 = cur / gK;
+        int d0 = dest % gK;
+        int d1 = dest / gK;
+        
+        int xoff = d0 - c0;
+        int yoff = d1 - c1;
+
+        if (xoff < 0) {
+            out_port = WEST;
+        } else if (xoff > 0 && yoff < 0) {
+            out_port = (RandomInt(1))?EAST:SOUTH; 
+        } else if (xoff > 0 && yoff > 0) {
+            out_port = (RandomInt(1))?EAST:NORTH; 
+        } else if (xoff > 0 && yoff == 0) {
+            out_port = EAST; 
+        } else if (xoff == 0 && yoff < 0) {
+            out_port = SOUTH; 
+        } else {
+            out_port = NORTH;
+        } 
+       // } else if (xoff == 0 && yoff > 0) {
+       //     out_port = NORTH;
+       // }
+        
+
+
+
+    }
+
+    outputs->Clear();
+
+    outputs->AddRange( out_port , vcBegin, vcEnd );
+
+}
+
+
 
 void my_nop_mesh( const Router *r, const Flit *f, 
   int in_channel, OutputSet *outputs, bool inject )
@@ -704,8 +849,8 @@ void my_nop_mesh( const Router *r, const Flit *f,
             //out_port = avail[rand()%avail.size()];
             vector<int> score(avail.size(), 100);
 
-            for (int i=0; i < avail.size(); i++) {    
-                int offset;
+            for (unsigned int i=0; i < avail.size(); i++) {    
+                int offset = 0;
                 switch (avail[i]) {
                     case EAST:
                         offset = 1;
@@ -728,14 +873,14 @@ void my_nop_mesh( const Router *r, const Flit *f,
                 vector<int> avail2 = findAOC(r2, f);
 
 
-                for (int m=0; m < avail2.size(); m++) {
+                for (unsigned int m=0; m < avail2.size(); m++) {
                     //if ()
                     score[i] -= r2->GetUsedCredit(avail2[m]);
                 }
             }
 
             int ind = 0;
-            for (int i=0; i < avail.size()-1; i++) {
+            for (unsigned int i=0; i < avail.size()-1; i++) {
                 if (score[i+1] == score[i])
                     ind = (rand()%2)? ind : i+1;
                 else if (score[i+1] > score[i])
@@ -751,6 +896,7 @@ void my_nop_mesh( const Router *r, const Flit *f,
     outputs->AddRange( out_port , vcBegin, vcEnd );
 
 }
+
 void dy_xy_mesh( const Router *r, const Flit *f, 
   int in_channel, OutputSet *outputs, bool inject )
 {
@@ -2346,6 +2492,7 @@ void min_adapt_torus( const Router *r, const Flit *f, int in_channel, OutputSet 
         gRoutingFunctionMap["my_xy_mesh"]          = &my_xy_mesh;
         gRoutingFunctionMap["dy_xy_mesh"]          = &dy_xy_mesh;
         gRoutingFunctionMap["my_nop_mesh"]          = &my_nop_mesh;
+        gRoutingFunctionMap["west_first_mesh"]          = &west_first_mesh;
         // Chao Chen
 
 
