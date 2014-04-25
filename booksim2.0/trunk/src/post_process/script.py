@@ -56,7 +56,7 @@ for n in range(len(dataRate)):
 #	os.remove('dump.txt')
 #	dataNoP.append(allData[0])
 
-# Adaptive routing
+# West first routing
 dataWest = []
 routing = "west_first"
 print routing
@@ -67,6 +67,19 @@ for n in range(len(dataRate)):
 	allData = map(float, open('dump.txt').readlines())
 	os.remove('dump.txt')
 	dataWest.append(allData[0])
+
+
+# North last routing
+dataNorth = []
+routing = "north_last"
+print routing
+for n in range(len(dataRate)):
+	print "Inj. Rate:", dataRate[n]
+	with open(os.devnull, "w") as fnull:
+		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
+	allData = map(float, open('dump.txt').readlines())
+	os.remove('dump.txt')
+	dataNorth.append(allData[0])
 
 
 
@@ -88,9 +101,14 @@ for n in range(len(dataRate)):
 #for n in range(len(dataRate)):
 #	print dataNoP[n]
 
-print "======Adaptive packet latencies======"
+print "======West first packet latencies======"
 for n in range(len(dataRate)):
 	print dataWest[n]
+
+print "======North last packet latencies======"
+for n in range(len(dataRate)):
+	print dataNorth[n]
+
 
 exit();
 
@@ -101,7 +119,7 @@ plt.plot(dataRate, dataXY, label='XY')
 #plt.plot(dataRate, dataOddEven, label='Odd Even')
 plt.plot(dataRate, dataDyXY, label='DyXY')
 #plt.plot(dataRate, dataNoP, label='NoP')
-plt.plot(dataRate, dataWest, label='Adaptive')
+plt.plot(dataRate, dataWest, label='West first')
 
 plt.legend(loc='upper left')
 plt.xlabel('Injection Rate (Packets/Cycle)')
