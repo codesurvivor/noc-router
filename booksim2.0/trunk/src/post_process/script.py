@@ -82,6 +82,19 @@ for n in range(len(dataRate)):
 	dataNorth.append(allData[0])
 
 
+# Negative first routing
+dataNegative = []
+routing = "negative_first"
+print routing
+for n in range(len(dataRate)):
+	print "Inj. Rate:", dataRate[n]
+	with open(os.devnull, "w") as fnull:
+		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), "routing_function = " + routing], stdout=fnull)
+	allData = map(float, open('dump.txt').readlines())
+	os.remove('dump.txt')
+	dataNegative.append(allData[0])
+
+
 
 # print	
 print "======XY packet latencies======"
@@ -108,6 +121,11 @@ for n in range(len(dataRate)):
 print "======North last packet latencies======"
 for n in range(len(dataRate)):
 	print dataNorth[n]
+
+print "======Negative first packet latencies======"
+for n in range(len(dataRate)):
+	print dataNegative[n]
+
 
 
 exit();
