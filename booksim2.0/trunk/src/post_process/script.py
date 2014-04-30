@@ -1,3 +1,4 @@
+#!/usr/bin/python 
 from subprocess import call
 import matplotlib.pyplot as plt
 import os
