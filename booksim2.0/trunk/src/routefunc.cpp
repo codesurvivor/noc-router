@@ -608,17 +608,13 @@ void my_xy_mesh( const Router *r, const Flit *f,
 }
 
 
-vector<int> findAOC( const Router* r, const Flit *f)
+void findAOC(vector<int>& avail, const Router* r, const Flit *f)
 {
-
-    vector<int> avail;
     if (r->GetID() == f->dest) {
-
         // at destination router, we don't need to separate VCs by dim order
         avail.push_back(2*gN);
 
     } else {
-
         int cur = r->GetID();
         int dest = f->dest;
         int src = f->src;
@@ -666,7 +662,6 @@ vector<int> findAOC( const Router* r, const Flit *f)
             } 
         }
     }
-    return avail;
 }
 
 vector<int> findOddEven( const Router* r, const Flit *f)
@@ -906,7 +901,9 @@ void my_nop_mesh( const Router *r, const Flit *f,
 
 
 
-        vector<int> avail = findAOC(r, f);
+
+        vector<int> avail;
+        findAOC(avail, r, f);
 
         if (avail.size() == 1)
             out_port = avail[0];
@@ -932,10 +929,15 @@ void my_nop_mesh( const Router *r, const Flit *f,
                 }
 
                 vector<Router *> _routers = *r->p_routers;
-                Router* r2 = _routers[r->GetID()+offset];
-        
+                int newR = r->GetID()+offset;
+                if (newR<0)
+                    continue;
+                
 
-                vector<int> avail2 = findAOC(r2, f);
+                Router* r2 = _routers[newR];
+        
+                vector<int> avail2;
+                findAOC(avail2, r2, f);
 
 
                 for (unsigned int m=0; m < avail2.size(); m++) {

@@ -11,7 +11,7 @@ def start_sim(routing, dataRate):
 		print "Inj. Rate:", dataRate[n]
 		with open(os.devnull, "w") as fnull:
 			call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), 
-	          "routing_function = " + routing], stdout=fnull)
+	          "routing_function=" + routing, "traffic=uniform"], stdout=fnull)
 		try:
 			allData = map(float, open('dump.txt').readlines())
 		except:
