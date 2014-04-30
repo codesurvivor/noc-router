@@ -805,77 +805,6 @@ void west_first_mesh( const Router *r, const Flit *f,
 
 }
 
-
-void north_last_mesh( const Router *r, const Flit *f, 
-  int in_channel, OutputSet *outputs, bool inject )
-{
-    int vcBegin = 0, vcEnd = gNumVCs-1;
-    if ( f->type == Flit::READ_REQUEST ) {
-        vcBegin = gReadReqBeginVC;
-        vcEnd = gReadReqEndVC;
-    } else if ( f->type == Flit::WRITE_REQUEST ) {
-        vcBegin = gWriteReqBeginVC;
-        vcEnd = gWriteReqEndVC;
-    } else if ( f->type ==  Flit::READ_REPLY ) {
-        vcBegin = gReadReplyBeginVC;
-        vcEnd = gReadReplyEndVC;
-    } else if ( f->type ==  Flit::WRITE_REPLY ) {
-        vcBegin = gWriteReplyBeginVC;
-        vcEnd = gWriteReplyEndVC;
-    }
-    assert(((f->vc >= vcBegin) && (f->vc <= vcEnd)) || (inject && (f->vc < 0)));
-
-    int out_port;
-
-    if(inject) {
-
-        out_port = -1;
-
-    } else if(r->GetID() == f->dest) {
-
-        // at destination router, we don't need to separate VCs by dim order
-        out_port = 2*gN;
-
-    } else {
-
-        int cur = r->GetID();
-        int dest = f->dest;
-
-        int c0 = cur % gK;
-        int c1 = cur / gK;
-        int d0 = dest % gK;
-        int d1 = dest / gK;
-        
-        int xoff = d0 - c0;
-        int yoff = d1 - c1;
-
-        if (yoff < 0 && xoff < 0) {
-            out_port = (RandomInt(1))?WEST:SOUTH;
-        } else if (yoff < 0 && xoff > 0) {
-            out_port = (RandomInt(1))?EAST:SOUTH;
-        } else if (yoff < 0 && xoff == 0) {
-            out_port = SOUTH; 
-        } else if (yoff >= 0 && xoff < 0) {
-            out_port = WEST; 
-        } else if (yoff >= 0 && xoff > 0) {
-            out_port = EAST; 
-        } else {
-            out_port = NORTH; 
-        } 
-        //} else if (yoff > 0 && xoff == 0) {
-        //    out_port = NORTH; 
-
-
-
-    }
-
-    outputs->Clear();
-
-    outputs->AddRange( out_port , vcBegin, vcEnd );
-
-}
-
-
 void negative_first_mesh( const Router *r, const Flit *f, 
   int in_channel, OutputSet *outputs, bool inject )
 {
@@ -1025,65 +954,6 @@ void my_nop_mesh( const Router *r, const Flit *f,
             out_port = avail[ind];
         }
 
-    }
-
-    outputs->Clear();
-
-    outputs->AddRange( out_port , vcBegin, vcEnd );
-
-}
-
-void dy_xy_mesh( const Router *r, const Flit *f, 
-  int in_channel, OutputSet *outputs, bool inject )
-{
-    int vcBegin = 0, vcEnd = gNumVCs-1;
-    if ( f->type == Flit::READ_REQUEST ) {
-        vcBegin = gReadReqBeginVC;
-        vcEnd = gReadReqEndVC;
-    } else if ( f->type == Flit::WRITE_REQUEST ) {
-        vcBegin = gWriteReqBeginVC;
-        vcEnd = gWriteReqEndVC;
-    } else if ( f->type ==  Flit::READ_REPLY ) {
-        vcBegin = gReadReplyBeginVC;
-        vcEnd = gReadReplyEndVC;
-    } else if ( f->type ==  Flit::WRITE_REPLY ) {
-        vcBegin = gWriteReplyBeginVC;
-        vcEnd = gWriteReplyEndVC;
-    }
-    assert(((f->vc >= vcBegin) && (f->vc <= vcEnd)) || (inject && (f->vc < 0)));
-
-    int out_port;
-
-    if(inject) {
-
-        out_port = -1;
-
-    } else if(r->GetID() == f->dest) {
-
-        // at destination router, we don't need to separate VCs by dim order
-        out_port = 2*gN;
-
-    } else {
-
-        int cur = r->GetID();
-        int dest = f->dest;
-
-        int cur_x = cur % gK;
-        int cur_y = cur / gK;
-        int dest_x = dest % gK;
-        int dest_y = dest / gK;
-
-        int out1, out2;
-
-        if (cur_x == dest_x) {
-            out_port = (cur_y < dest_y) ? NORTH : SOUTH;
-        } else if (cur_y == dest_y) {
-            out_port = (cur_x < dest_x) ? EAST : WEST;
-        } else {
-            out1 = (cur_y < dest_y) ? NORTH : SOUTH;
-            out2 =  (cur_x < dest_x) ? EAST : WEST;
-            out_port = (r->GetUsedCredit(out1) > r->GetUsedCredit(out2)) ? out2 : out1;
-        }
     }
 
     outputs->Clear();
@@ -2626,10 +2496,8 @@ void min_adapt_torus( const Router *r, const Flit *f, int in_channel, OutputSet 
         // Chao Chen
         gRoutingFunctionMap["odd_even_mesh"]          = &odd_even_mesh;
         gRoutingFunctionMap["my_xy_mesh"]          = &my_xy_mesh;
-        gRoutingFunctionMap["dy_xy_mesh"]          = &dy_xy_mesh;
         gRoutingFunctionMap["my_nop_mesh"]          = &my_nop_mesh;
         gRoutingFunctionMap["west_first_mesh"]          = &west_first_mesh;
-        gRoutingFunctionMap["north_last_mesh"]          = &north_last_mesh;
         gRoutingFunctionMap["negative_first_mesh"]          = &negative_first_mesh;
         // Chao Chen
 
