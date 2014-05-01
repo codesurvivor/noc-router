@@ -1,6 +1,5 @@
 #!/usr/bin/python 
 from subprocess import call
-import matplotlib.pyplot as plt
 import os
 
 def start_sim(routing, dataRate):
@@ -9,8 +8,8 @@ def start_sim(routing, dataRate):
 	print routing
 	for n in range(len(dataRate)):
 		print "Inj. Rate:", dataRate[n]
-		with open(os.devnull, "w") as fnull:
-			call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), 
+		fnull = open(os.devnull, "w")
+		call(["../booksim", "../examples/chaoconfig", "injection_rate=" + str(dataRate[n]), 
 	          "routing_function=" + routing, "traffic=uniform"], stdout=fnull)
 		try:
 			allData = map(float, open('dump.txt').readlines())
@@ -49,6 +48,7 @@ print_msg(dataNoP, "NoP")
 #exit();
 
 # plot figure
+import matplotlib.pyplot as plt
 fig = plt.figure()
 
 plt.plot(dataRateXY, dataXY, label='XY')
