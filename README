@@ -1,7 +1,7 @@
 Author: Chao Chen, chao.chen@polymtl.ca
 
-This project implements NoC static and dynamic routers. Static router is an XY router. Dynamic router is an Odd-Even router and a DyAD router.
+This project implements NoC deterministic, partically adaptive and fully adaptive routing algorithms.
 
-booksim2.0 is used for high level simulation.
+booksim2.0 is used for high level simulation. 5 routing algorithms are implemented: 1, XY; 2, West-first; 3, Negative-first; 4, Odd-Even; 5, Neighbors-on-Path
 
-Verilog is used as the HDL language.
+VHDL is used as the HDL language. 3 routing algorithms are implemented: 1, XY; 2, West-first; 3, Odd-Even
