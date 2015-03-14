@@ -1,0 +1,1 @@
+This project implements NoC static and dynamic routers in Verilog.
